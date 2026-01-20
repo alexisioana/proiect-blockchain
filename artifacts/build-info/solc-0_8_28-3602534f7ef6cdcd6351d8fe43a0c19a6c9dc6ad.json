@@ -1,0 +1,38 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-3602534f7ef6cdcd6351d8fe43a0c19a6c9dc6ad",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/MedicalRecords.sol": "project/contracts/MedicalRecords.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/AccessControl.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.28;\r\n\r\ncontract AccessControl {\r\n\r\n    address public owner;\r\n\r\n    // pacient => medic => are acces?\r\n    mapping(address => mapping(address => bool)) private accessRights;\r\n\r\n    // EVENTS\r\n    event AccessGranted(address indexed patient, address indexed doctor);\r\n    event AccessRevoked(address indexed patient, address indexed doctor);\r\n\r\n    // MODIFIER\r\n    modifier onlyOwner() {\r\n        require(msg.sender == owner, \"Not owner\");\r\n        _;\r\n    }\r\n\r\n    constructor() {\r\n        owner = msg.sender;\r\n    }\r\n\r\n    // pacientul acorda acces unui medic\r\n    function grantAccess(address doctor) external {\r\n        accessRights[msg.sender][doctor] = true;\r\n        emit AccessGranted(msg.sender, doctor);\r\n    }\r\n\r\n    // pacientul revoca accesul\r\n    function revokeAccess(address doctor) external {\r\n        accessRights[msg.sender][doctor] = false;\r\n        emit AccessRevoked(msg.sender, doctor);\r\n    }\r\n\r\n    // verificare acces (folosita de alt contract)\r\n    function hasAccess(address patient, address doctor) external view returns (bool) {\r\n        return accessRights[patient][doctor];\r\n    }\r\n\r\n    // exemplu functie PURE (cerinta barem)\r\n    function version() external pure returns (string memory) {\r\n        return \"AccessControl v1.0\";\r\n    }\r\n}\r\n"
+      },
+      "project/contracts/MedicalRecords.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.28;\r\n\r\nimport \"./AccessControl.sol\";\r\n\r\ncontract MedicalRecords {\r\n\r\n    AccessControl public accessControl;\r\n\r\n    address public owner;\r\n\r\n    // pacient => hash / CID date medicale\r\n    mapping(address => string) private records;\r\n\r\n    // EVENTS\r\n    event RecordAdded(address indexed patient, string recordHash);\r\n    event RecordAccessed(address indexed patient, address indexed doctor);\r\n\r\n    // MODIFIER\r\n    modifier onlyOwner() {\r\n        require(msg.sender == owner, \"Not owner\");\r\n        _;\r\n    }\r\n\r\n    constructor(address accessControlAddress) {\r\n        owner = msg.sender;\r\n        accessControl = AccessControl(accessControlAddress);\r\n    }\r\n\r\n    // pacientul adauga / actualizeaza datele sale\r\n    function addRecord(string calldata recordHash) external {\r\n        records[msg.sender] = recordHash;\r\n        emit RecordAdded(msg.sender, recordHash);\r\n    }\r\n\r\n    // medicul citeste datele daca are acces\r\n    function getRecord(address patient) external view returns (string memory) {\r\n        require(\r\n            accessControl.hasAccess(patient, msg.sender),\r\n            \"Access denied\"\r\n        );\r\n        return records[patient];\r\n    }\r\n\r\n    // exemplu transfer ETH (cerinta barem)\r\n    function payForAccess(address patient) external payable {\r\n        require(msg.value > 0, \"Send ETH\");\r\n        emit RecordAccessed(patient, msg.sender);\r\n    }\r\n\r\n    // functie view\r\n    function getMyRecord() external view returns (string memory) {\r\n        return records[msg.sender];\r\n    }\r\n}\r\n"
+      }
+    }
+  }
+}
