@@ -2,10 +2,14 @@
 pragma solidity ^0.8.28;
 
 import "./AccessControl.sol";
+import "./RecordUtils.sol";
+import "./IAccessControl.sol";
+
+
 
 contract MedicalRecords {
 
-    AccessControl public accessControl;
+    IAccessControl public accessControl;
 
     address public owner;
 
@@ -29,9 +33,11 @@ contract MedicalRecords {
 
     // pacientul adauga / actualizeaza datele sale
     function addRecord(string calldata recordHash) external {
-        records[msg.sender] = recordHash;
-        emit RecordAdded(msg.sender, recordHash);
-    }
+    require(RecordUtils.isValidRecord(recordHash), "Invalid record");
+    records[msg.sender] = recordHash;
+    emit RecordAdded(msg.sender, recordHash);
+}
+
 
     // medicul citeste datele daca are acces
     function getRecord(address patient) external view returns (string memory) {
