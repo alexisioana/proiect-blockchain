@@ -43,4 +43,9 @@ contract AccessControl {
     function version() external pure returns (string memory) {
         return "AccessControl v1.0";
     }
-}
+
+    // ===== ADAUGAT (pentru barem) =====
+
+    // folosire modifier onlyOwner
+    function changeOwner(address newOwner) external onlyOwner {
+        require(newOwner != add

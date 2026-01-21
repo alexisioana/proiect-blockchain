@@ -52,4 +52,12 @@ contract MedicalRecords {
     function getMyRecord() external view returns (string memory) {
         return records[msg.sender];
     }
+
+    // ===== ADAUGAT (pentru barem) =====
+
+    // owner-ul retrage ETH din contract (transfer ETH real)
+    function withdraw() external onlyOwner {
+        payable(owner).transfer(address(this).balance);
+    }
 }
+
